@@ -7,6 +7,7 @@
 #include "esp_wpa2.h"
 #include "esp_wifi.h"
 #include "esp_wpa2.h"
+#include <Wire.h>
 
 Display display;
 Bluetooth bluetooth;
