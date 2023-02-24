@@ -83,10 +83,8 @@ void MPU9250::setup()
         float q2 = imu.calcQuat(imu.qy);
         float q3 = imu.calcQuat(imu.qz);
 
-        SerialPort.println("Q: " + String(q0, 4) + ", " +
-                           String(q1, 4) + ", " + String(q2, 4) +
-                           ", " + String(q3, 4));
-                           //roll - крен pitch - наклон yaw - рысканье
+        SerialPort.println("Q: " + String(q0, 4) + ", " + String(q1, 4) + ", " + String(q2, 4) + ", " + String(q3, 4));
+        // roll - крен pitch - наклон yaw - рысканье
         SerialPort.println("R/P/Y: " + String(imu.roll) + ", " + String(imu.pitch) + ", " + String(imu.yaw));
         SerialPort.println("Time: " + String(imu.time) + " ms");
         SerialPort.println();

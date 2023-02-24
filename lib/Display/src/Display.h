@@ -1,4 +1,5 @@
 #pragma once
+#include <Arduino.h>
 #include <Helper.h>
 
 const unsigned short wifi_no[256] PROGMEM = {
@@ -216,9 +217,10 @@ public:
     void setup();
     void loop();
     void setBluetooth(bool connected);
-    void setBatteryLevel(int level);
+    void setBatteryLevel(String level);
     void setXYZRemote(DataFly &dataFly);
     void setWifiLevel();
+    void setSimpleText(String text, int x, int y);
 
 private:
     void setBidgest();

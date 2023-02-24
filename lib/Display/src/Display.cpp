@@ -51,11 +51,18 @@ void Display::loop()
   sprite.pushSprite(0, 0);
 }
 
-void Display::setBatteryLevel(int level)
+void Display::setBatteryLevel(String level)
 {
   sprite.setTextColor(TFT_GREEN, TFT_BLACK);
   sprite.pushImage(290, 1, 29, 16, battery);
-  sprite.drawString(String(level), 294, 9);
+  if (level.length() < 3)
+  {
+    sprite.drawString(level, 296, 9);
+  }
+  else
+  {
+    sprite.drawString(level, 294, 9);
+  }
 }
 
 void Display::setBluetooth(bool connected)
@@ -131,5 +138,13 @@ void Display::setXYZRemote(DataFly &dataFly)
   sprite.drawString("X = " + String(dataFly.x), 20, 40);
   sprite.drawString("Y = " + String(dataFly.y), 20, 60);
   sprite.drawString("Z = " + String(dataFly.z), 20, 80);
+  sprite.setTextSize(1);
+}
+
+void Display::setSimpleText(String text, int x, int y)
+{
+  sprite.setTextSize(1);
+  sprite.setTextColor(TFT_WHITE, TFT_BLACK);
+  sprite.drawString(text, x, y);
   sprite.setTextSize(1);
 }
