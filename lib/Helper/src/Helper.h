@@ -4,6 +4,12 @@ typedef struct
 {
     float x, y, z = 0.0f;
     float xtrim, ytrim, ztrim = 0.0f;
+    // roll - крен pitch - наклон yaw - рысканье
+    float Pitch = 0.0f;
+    float Roll = 0.0f;
+    float Yaw = 0.0f;
+
+    float Q1, Q2, Q3, Q4 = 0.0f;
 
 } DataFly;
 
@@ -17,4 +23,3 @@ private:
 #endif
 
 extern Helper Data;
-

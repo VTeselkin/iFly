@@ -1,15 +1,15 @@
 #pragma once
 #include <Helper.h>
 
-class Display
+class Sensor
 {
 
 public:
     void setup();
-    void loop();
+    void loop(DataFly data);
   
 
 private:
-    void printIMUData();
+   
    
 };

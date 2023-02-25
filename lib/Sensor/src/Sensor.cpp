@@ -1,7 +1,10 @@
+#include <Arduino.h>
+#include <Sensor.h>
 #include <SparkFunMPU9250-DMP.h>
 
 MPU9250_DMP imu;
-void MPU9250::setup()
+
+void Sensor::setup(void)
 {
     // Call imu.begin() to verify communication with and
     // initialize the MPU-9250 to it's default values.
@@ -55,38 +58,35 @@ void MPU9250::setup()
         // DMP_FEATURE_LP_QUAT and 6X_LP_QUAT are mutually exclusive
         imu.dmpBegin(DMP_FEATURE_LP_QUAT | DMP_FEATURE_GYRO_CAL, 10); // Enable 6-axis quat  Use gyro calibration
     }
-
-    void MPU9250::loop()
+}
+void Sensor::loop(DataFly data)
+{
+    // Check for new data in the FIFO
+    if (imu.fifoAvailable())
     {
-        // Check for new data in the FIFO
-        if (imu.fifoAvailable())
+        // Use dmpUpdateFifo to update the ax, gx, mx, etc. values
+        if (imu.dmpUpdateFifo() == INV_SUCCESS)
         {
-            // Use dmpUpdateFifo to update the ax, gx, mx, etc. values
-            if (imu.dmpUpdateFifo() == INV_SUCCESS)
-            {
-                // computeEulerAngles can be used -- after updating the
-                // quaternion values -- to estimate roll, pitch, and yaw
-                imu.computeEulerAngles();
-                printIMUData();
-            }
+            // computeEulerAngles can be used -- after updating the
+            // quaternion values -- to estimate roll, pitch, and yaw
+            imu.computeEulerAngles();
+            // After calling dmpUpdateFifo() the ax, gx, mx, etc. values
+            // are all updated.
+            // Quaternion values are, by default, stored in Q30 long
+            // format. calcQuat turns them into a float between -1 and 1
+            data.Q1 = imu.calcQuat(imu.qw);
+            data.Q2 = imu.calcQuat(imu.qx);
+            data.Q3 = imu.calcQuat(imu.qy);
+            data.Q4 = imu.calcQuat(imu.qz);
+
+            data.Pitch = imu.pitch;
+            data.Roll = imu.roll;
+            data.Yaw = imu.yaw;
+
+            Serial.println("Q: " + String(data.Q1, 4) + ", " + String(data.Q2, 4) + ", " + String(data.Q3, 4) + ", " + String(data.Q4, 4));
+            Serial.println("R/P/Y: " + String(data.Roll) + ", " + String(data.Pitch) + ", " + String(data.Yaw));
+            Serial.println("Time: " + String(imu.time) + " ms");
+            Serial.println();
         }
-    }
-
-    void printIMUData(void)
-    {
-        // After calling dmpUpdateFifo() the ax, gx, mx, etc. values
-        // are all updated.
-        // Quaternion values are, by default, stored in Q30 long
-        // format. calcQuat turns them into a float between -1 and 1
-        float q0 = imu.calcQuat(imu.qw);
-        float q1 = imu.calcQuat(imu.qx);
-        float q2 = imu.calcQuat(imu.qy);
-        float q3 = imu.calcQuat(imu.qz);
-
-        SerialPort.println("Q: " + String(q0, 4) + ", " + String(q1, 4) + ", " + String(q2, 4) + ", " + String(q3, 4));
-        // roll - крен pitch - наклон yaw - рысканье
-        SerialPort.println("R/P/Y: " + String(imu.roll) + ", " + String(imu.pitch) + ", " + String(imu.yaw));
-        SerialPort.println("Time: " + String(imu.time) + " ms");
-        SerialPort.println();
     }
 }
