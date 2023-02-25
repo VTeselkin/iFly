@@ -6,10 +6,9 @@ class Sensor
 
 public:
     void setup();
-    void loop(DataFly data);
-  
+    void loop(DataFly data);  
 
 private:
-   
+   void getAltitude(DataFly data);
    
 };

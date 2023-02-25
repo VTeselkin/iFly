@@ -15,12 +15,10 @@ iFlyWiFi wifi;
 Battery batteryLevel;
 Sensor mpu9250;
 
-uint8_t value = 0;
-
 const char *ntpServer = "pool.ntp.org";
 const long gmtOffset_sec = 3600;
 const int daylightOffset_sec = 3600;
-
+float desiredAltitude = 0.0f;
 DataFly dataFly;
 
 uint16_t throttle_value = 0x30;
@@ -63,11 +61,12 @@ void setup(void)
 void loop()
 {
   mpu9250.loop(dataFly);
+
   // стабилизация дрона
-  float FLESC_speed_1 = 1500 + dataFly.Pitch * 10 + dataFly.Roll * 10 - dataFly.Yaw * 5;
-  float FRESC_speed_2 = 1500 + dataFly.Pitch * 10 - dataFly.Roll * 10 + dataFly.Yaw * 5;
-  float RLESC_speed_3 = 1500 - dataFly.Pitch * 10 - dataFly.Roll * 10 - dataFly.Yaw * 5;
-  float RRESC_speed_4 = 1500 - dataFly.Pitch * 10 + dataFly.Roll * 10 + dataFly.Yaw * 5;
+  float FLESC_speed_1 = 1500 + dataFly.Pitch * 10 + dataFly.Roll * 10 - dataFly.Yaw * 5 + (dataFly.Altitude - desiredAltitude) * 5;
+  float FRESC_speed_2 = 1500 + dataFly.Pitch * 10 - dataFly.Roll * 10 + dataFly.Yaw * 5 + (dataFly.Altitude - desiredAltitude) * 5;
+  float RLESC_speed_3 = 1500 - dataFly.Pitch * 10 - dataFly.Roll * 10 - dataFly.Yaw * 5 + (dataFly.Altitude - desiredAltitude) * 5;
+  float RRESC_speed_4 = 1500 - dataFly.Pitch * 10 + dataFly.Roll * 10 + dataFly.Yaw * 5 + (dataFly.Altitude - desiredAltitude) * 5;
 
   // ограничение скорости моторов от 1000 до 2000
   FLESC_speed_1 = constrain(FLESC_speed_1, 1000, 2000);
@@ -75,7 +74,7 @@ void loop()
   RLESC_speed_3 = constrain(RLESC_speed_3, 1000, 2000);
   RRESC_speed_4 = constrain(RRESC_speed_4, 1000, 2000);
 
-// управление скоростью моторов по протоколу DSHOT600
+  // управление скоростью моторов по протоколу DSHOT600
   FLESC.send_dshot_value(FLESC_speed_1);
   FRESC.send_dshot_value(FRESC_speed_2);
   RLESC.send_dshot_value(RLESC_speed_3);

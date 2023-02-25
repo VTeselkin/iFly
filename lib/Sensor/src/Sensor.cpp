@@ -1,8 +1,16 @@
 #include <Arduino.h>
 #include <Sensor.h>
 #include <SparkFunMPU9250-DMP.h>
+#include <Adafruit_BMP280.h>
+#include <SimpleKalmanFilter.h>
 
 MPU9250_DMP imu;
+Adafruit_BMP280 bmp;
+SimpleKalmanFilter pressureKalmanFilter(1, 1, 0.01);
+
+float base_pressure = 1013.25F;
+const long SERIAL_REFRESH_TIME = 100;
+long refresh_time;
 
 void Sensor::setup(void)
 {
@@ -19,6 +27,9 @@ void Sensor::setup(void)
             Serial.println();
             delay(5000);
         }
+        // инициализируем датчик давления по адресу 0x76
+        bmp.begin(0x76);
+
         // Use setSensors to turn on or off MPU-9250 sensors.
         // Any of the following defines can be combined:
         // INV_XYZ_GYRO, INV_XYZ_ACCEL, INV_XYZ_COMPASS,
@@ -57,10 +68,12 @@ void Sensor::setup(void)
         // accelerometer in low-power mode to estimate quat's.
         // DMP_FEATURE_LP_QUAT and 6X_LP_QUAT are mutually exclusive
         imu.dmpBegin(DMP_FEATURE_LP_QUAT | DMP_FEATURE_GYRO_CAL, 10); // Enable 6-axis quat  Use gyro calibration
+        base_pressure = bmp.readPressure() / 100.0F;
     }
 }
 void Sensor::loop(DataFly data)
 {
+
     // Check for new data in the FIFO
     if (imu.fifoAvailable())
     {
@@ -88,5 +101,24 @@ void Sensor::loop(DataFly data)
             Serial.println("Time: " + String(imu.time) + " ms");
             Serial.println();
         }
+    }
+    getAltitude(data);
+}
+
+void Sensor::getAltitude(DataFly data)
+{
+    float pressure = bmp.readPressure() / 100.0F; // давление в гектопаскалях
+    float altitude = bmp.seaLevelForAltitude(pressure, base_pressure);
+    float estimated_altitude = pressureKalmanFilter.updateEstimate(altitude);
+    if (millis() > refresh_time)
+    {
+        Serial.print("Altitude = ");
+        Serial.print(altitude, 6);
+        Serial.print(" , ");
+        Serial.print("Estimated altitude = ");
+        Serial.print(estimated_altitude, 6);
+        Serial.println();
+        data.Altitude = estimated_altitude;
+        refresh_time = millis() + SERIAL_REFRESH_TIME;
     }
 }
